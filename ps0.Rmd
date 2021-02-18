@@ -1,6 +1,6 @@
 ---
 title: 'STAT 231: Problem Set 0'
-author: "YOUR NAME HERE"
+author: "Jett Knight"
 date: "due by 5 PM on Friday, February 19"
 output:
   html_document:
