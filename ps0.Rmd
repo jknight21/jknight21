@@ -185,7 +185,7 @@ datasaurus_dozen %>%
 
 What do you notice?  Is the correlation coefficiant an appropriate summary for any of these datasets?  Why or why not?
 
-> RESPONSE:
+> RESPONSE: The correlation coefficient is not an efficient summary for any of these data sets. Each dataset has an almost identical correlation coefficient, but each data set sketches a completely different design from any of the others.
 
 
 *You should pause again, commit changes with the commit message "Added answer for Ex 5", and push.*
