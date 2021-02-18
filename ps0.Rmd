@@ -82,7 +82,7 @@ datasaurus_dozen %>%
 
 Calculate the correlation coefficient between `x` and `y` for the `dino` dataset.  Below is the code you will need to complete this exercise. Basically, the answer is already given, but you need to include relevant bits in your Rmd document and successfully knit it and view the results.  What does this correlation coefficient imply about the relationship between `x` and `y` in the `dino` dataset? 
 
-> RESPONSE: 
+> RESPONSE: The correlation coefficient is approximately -0.06. This implies there is essentially no relationship between the variables x and y.
  
 ```{r}
 # Start with the `datasaurus_dozen` and pipe it into the `filter` function to filter for observations where `dataset == "dino"`. Store the resulting filtered data frame as a new data frame called `dino_data`.
@@ -101,7 +101,7 @@ If this seems like a lot, don't worry.  You will learn about the philosophy of b
 
 What do you notice now about the relationship between x and y?
 
-> RESPONSE:
+> RESPONSE: There is no correlation between the data points, as the data points instead draw a graphic of a dinosaur.
 
 ```{r fig.fullwidth=TRUE}
 ggplot(data = dino_data, mapping = aes(x = x, y = y)) +
