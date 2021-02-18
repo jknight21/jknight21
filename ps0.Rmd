@@ -3,9 +3,9 @@ title: 'STAT 231: Problem Set 0'
 author: "Jett Knight"
 date: "due by 5 PM on Friday, February 19"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
 ---
 
 This problem set is a modified version of a lab developed by Mine Cetinkaya-Rundel.
