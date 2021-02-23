@@ -171,8 +171,33 @@ Manual:
 - Don't like those colors?  Get more specific by specifying with hex color codes.  Try replacing "green", "purple" and "blue" with "#05a05a", "#844185", "#024a81", respectively.
 - How to identify hex codes for more colors?  Check out: https://www.color-hex.com/.  Create one last figure with three colors of your choice assigned manually.
 
-```{r, fig.width=10}
+```{r, fig.width=10, warning=FALSE}
+# ready the data for plotting
+un_votes_hr <- un_votes %>%
+  filter(country %in% c("United States of America", "Japan", "Kenya")) %>%
+  inner_join(un_roll_calls, by = "rcid") %>%
+  inner_join(un_roll_call_issues, by = "rcid") %>%
+  group_by(country, year = year(date), issue) %>%
+  summarize(
+    votes = n(),
+    percent_yes = mean(vote == "yes")
+    ) %>%
+  filter(votes > 5) %>%  # only use records where there are more than 5 votes
+  filter(issue == "Human rights") # only keep records related to human rights issue
 
+# plot the data  
+ggplot(data = un_votes_hr
+       , mapping = aes(x = year, y = percent_yes, color = country)) +
+    geom_point(aes(shape = country)) +
+    geom_smooth(aes(lty = country)) +
+    labs(
+      title = "Percentage of 'Yes' votes  on human rights issues in the UN General Assembly",
+      subtitle = "1946 to 2015",
+      y = "% Yes",
+      x = "Year",
+      color = "Country"
+    ) + 
+  scale_color_manual(values = c("green", "purple", "blue"))
 ```
 
 *This is a good place to pause, commit changes with the commit message "Added answer for Ex 3", and push.*
