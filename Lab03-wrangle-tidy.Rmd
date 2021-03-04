@@ -113,11 +113,11 @@ Let's start by creating a scatterplot with log(spending) on the x-axis and log(e
 
 First, sketch the scatterplot (don't worry about the actual x-y relationship, but be sure to identify the different variables that will be needed to create the plot).  What variables do you need in the dataset in order to create the scatterplot in ggplot?  What will each observation (row) in the dataset represent?
 
-> RESPONSE: 
+> RESPONSE: We will need the TotalSpending variable from the spending dataset (from both 2013 and 2014) and the TotalCoverage variable from the coverage dataset (from both 2013 and 2014). 
 
 What are some of the steps that will need to be taken to get the data in that form?  
 
-> RESPONSE: 
+> RESPONSE: We will need to merge the two datasets together to create a scatterplot to analyze the relationship.
 
 *When you're done with the above responses, check that you're on the right track by viewing the video "Lab03-q1-sketch" (posted on Moodle).*
 
@@ -127,7 +127,10 @@ Now implement those steps in R, tidying the dataset for plotting.  After the fin
 
 
 ```{r}
-
+spending <- spending %>%
+  inner_join(coverage, by = c("Location" = "Location"))
+spending <- spending %>%
+  gather(key = YearMeasure, value = Value, -Location)
 ```
 
 We see there is a strong relationship between log(spending) and log(coverage) within each year. However, you might suspect that health care coverage and spending is also strongly related to population size.  In the `coverage` dataset, the total type is not really a formal type of health care coverage. It really represents just the total number of people in the state. This is useful information.  Next:
