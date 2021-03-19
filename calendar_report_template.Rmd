@@ -1,0 +1,102 @@
+---
+title: "Analysis of Time Management Over a Two Week Period"
+subtitle: "Stat231: Google Calendar Report"
+author: "Jett Knight"
+date: "Due Friday, March 19 by 5:00 PM EST"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# How do I spend my time?
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ical)
+```
+
+```{r}
+path <- "C:/Users/_Admin/Desktop"
+filename <- "Jett Knight_jettknight@gmail.com.ics"
+```
+
+```{r}
+my_calendar0 <- ical_parse_df(file = paste0(path, "/", filename)) %>%
+  mutate(start_datetime = with_tz(start, tzone = "America/New_York"), end_datetime = with_tz(end, tzone = "America/New_York"), length_hour = end_datetime - start_datetime, date = floor_date(start_datetime, unit = "day"))
+```
+
+```{r}
+my_calendar <- my_calendar0 %>%
+  filter(date > "2021-02-28") %>%
+  filter(date < "2021-03-15") %>%
+  select(-c(uid, description, last.modified, status)) %>%
+  rename(length_second = length_hour) %>%
+  mutate(length_hour = length_second / 3600)
+```
+
+My questions of interest were how much time I spent in all my classes over the course of two weeks and how much time I spent in schoolwork compared to time to myself. I recorded my day-to-day activities over the course of two weeks to try to answer this question.
+
+The barplot I have created below shows a breakdown of time I spend in each of my classes over the course of two weeks (both lectures and homework). One can see that I spend the most time over a two-week period in Computer Science and the least in my film class.
+
+```{r}
+barplotdata <- my_calendar %>%
+  filter(summary %in% c("Computer Science", "Data Science", "Film Class"))
+```
+
+```{r}
+basicbarplot <- ggplot(data = barplotdata, aes(x = summary, y = length_hour)) + geom_bar(stat = "identity", color = "blue", fill = "blue") + labs(title = "Time Spent in Classes Over Two Weeks", x = "Classes", y = "Hours Spent in Class")
+basicbarplot
+```
+
+The boxplot I have created below shows a breakdown of how much time I spend in class vs out of class. From the boxplot, you can see that I spend about the same amount of time working on Computer Science as I do socializing or hanging out with friends. I also spend good chunks of time in my other two classes.
+
+```{r}
+boxplotdata <- my_calendar
+```
+
+```{r}
+boxplotdata$summary <- gsub("Computer Science", "Class 1", boxplotdata$summary)
+```
+
+```{r}
+boxplotdata$summary <- gsub("Data Science", "Class 2", boxplotdata$summary)
+```
+
+```{r}
+boxplotdata$summary <- gsub("Film Class", "Class 3", boxplotdata$summary)
+```
+
+```{r}
+basicboxplot <- ggplot(data = boxplotdata, aes(x = summary, y = length_hour)) + geom_boxplot(stat = "boxplot", color = c("red", "red", "red", "blue", "blue", "blue", "blue", "blue"), fill = c("red", "red", "red", "blue", "blue", "blue", "blue", "blue")) + labs(title = "Time Spent on All Weekly Activities", x = "Activities", y = "Hours Spent on Activity")
+basicboxplot
+```
+
+Describe what information is conveyed through the table (that you'll create below) here.
+
+The table below shows my breakdown of activities in what I spent the most hours doing vs the least. I was surprised by how much time I spent socializing with others, I thought it would be way less. The rest lines up with my predictions however.
+
+```{r}
+my_calendar2 <- my_calendar %>%
+  group_by(summary) %>%
+  summarize(tot_hrs = sum(length_hour))
+my_calendar2
+```
+
+\newpage
+# Reflection
+
+Write your one-page reflection here in paragraph form.  In particular, address:
+
+  This assignment was informative in a lot of ways. I had to get used of keeping track of how many hours I would spend on assignments for a given class, especially because I would often switch between assignments at a moment's notice. It was also tough to quantify things like hanging out with friends. For future data collection/analysis projects, one thing I will be sure to do is schedule out my days more intricately to avoid future hassles like this. It was interesting to see answers to my question, but honestly to get a completely accurate answer I think I would have to do this assignment for an entire semester. I don't know if it would make the assignment itself harder though, there'd just be more data to work with. My expectation when I give data to programs like Facebook or Instagram is that they will not use that data for malign purposes, but I am not naive enough to believe that will be the case. I give myself extra responsibility when I analyze the data of others because they have no control over how I choose to present the data. As a data scientist, I absolutely have a responsibility to accurately present the data I've been given and not use it to harm others.
+
+- What difficulties in the data collection and analysis process did you encounter?  Identify two of your main hurdles in gathering accurate data.
+- What implications does that have for future data collection and/or analysis projects? 
+- How much data do you think you'd need to collect in order to answer your question(s) of interest? Would it be hard to collect that data? Why or why not?
+- As someone who provides data, what expectations do you have when you give your data (e.g. to Facebook, Google, MapMyRun, etc.)?  
+- As someone who analyzes others' data, what ethical responsibilities do you have?
+
+
+
