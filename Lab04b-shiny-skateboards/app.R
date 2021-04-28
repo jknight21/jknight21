@@ -166,18 +166,3 @@ server <- function(input,output){
 # call to shinyApp #
 ####################
 shinyApp(ui = ui, server = server)
-
-# Your turn.  Copy this code as a template into a new app.R file (WITHIN A FOLDER
-# named something different than your other Shiny app folders).  Then, either 
-# (1) update this template to still explore the skateboards dataset, but with
-#     different app functionality (e.g. different widgets, variables, layout, theme...); 
-#   OR
-# (2) use this as a template to create a Shiny app for a different dataset 
-#     from the fivethirtyeight package:
-#     either candy_rankings (candy characteristics and popularity)
-#            hate_crimes (hate crimes in US states, 2010-2015)
-#            mad_men (tv performers and their post-show career), 
-#            ncaa_w_bball_tourney (women's NCAA div 1 basketball tournament, 1982-2018), 
-#         or nfl_suspensions (NFL suspensions, 1946-2014)
-#      these five datasets are part of the fivethirtyeight package
-#      and their variable definitions are included in pdfs posted to the Moodle course page

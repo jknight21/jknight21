@@ -1,0 +1,280 @@
+---
+title: "STAT 231: Problem Set 7B"
+author: "Jett Knight"
+date: "due by 10 PM on Friday, April 16"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+This homework assignment is designed to help you further ingest, practice, and expand upon the material covered in class over the past week(s).  You are encouraged to work with other students, but all code and text must be written by you, and you must indicate below who you discussed the assignment with (if anyone).  
+
+Steps to proceed:
+
+\begin{enumerate}
+\item In RStudio, go to File > Open Project, navigate to the folder with the course-content repo, select the course-content project (course-content.Rproj), and click "Open" 
+\item Pull the course-content repo (e.g. using the blue-ish down arrow in the Git tab in upper right window)
+\item Copy ps7B.Rmd from the course repo to your repo (see page 6 of the GitHub Classroom Guide for Stat231 if needed)
+\item Close the course-content repo project in RStudio
+\item Open YOUR repo project in RStudio
+\item In the ps7B.Rmd file in YOUR repo, replace "YOUR NAME HERE" with your name
+\item Add in your responses, committing and pushing to YOUR repo in appropriate places along the way
+\item Run "Knit PDF" 
+\item Upload the pdf to Gradescope.  Don't forget to select which of your pages are associated with each problem.  \textit{You will not get credit for work on unassigned pages (e.g., if you only selected the first page but your solution spans two pages, you would lose points for any part on the second page that the grader can't see).} 
+\end{enumerate}
+
+```{r, setup, include=FALSE}
+library(tidyverse)
+library(viridis)
+# for networks
+library(ggnetwork)
+library(igraph)
+# for mapping
+library(datasets)
+library(mdsr)
+library(gapminder)
+library(fivethirtyeight)
+
+knitr::opts_chunk$set(
+  tidy=FALSE,     # display code as typed
+  size="small")   # slightly smaller font for code
+```
+
+
+\newpage 
+# If you discussed this assignment with any of your peers, please list who here:
+
+> ANSWER:
+
+\newpage
+# 1. More migration
+
+1a. Consider migration between the following countries: Argentina, Brazil, Japan, Kenya, Great Britain, India, South Korea, United States.  Compare the TOTAL (males + females) migration between these countries over time.  In separate (directed) graphs for 1980 and 2000, visualize the network for the these countries with edge width and/or edge color corresponding to migration flow size.  Interpret the two graphs -- what *information in context* do they convey?
+
+*Don't forget to order the columns correctly and only keep relevant rows before transforming into a network object.*
+
+> ANSWER: For both 1980 and 2000, there are large degrees of travel between Great Britain and the U.S., as well as between South Korea and Japan. In 1980, we can also see a high degree of travel between Great Britain and India, but this seems to have somewhat died down by 2000.
+
+
+```{r, message = FALSE}
+MigrationFlows <- read_csv("MigrationFlows.csv")
+
+# Argentina, Brazil, Great Britain, Japan, Kenya,  India, South Korea, United States
+countries <- c("ARG", "BRA", "GBR", "JPN", "KEN", "IND","KOR", "USA")
+
+# need migration overall: 
+# do some prelim data wrangling to combine numbers for males + females
+MigrationFlowsF <- MigrationFlows %>%
+  filter(sex == "Female")
+MigrationFlowsM <- MigrationFlows %>%
+  filter(sex == "Male")
+```
+
+```{r}
+MigrationFlowsF <- MigrationFlowsF %>%
+  select(destcode, origincode, Y2000, Y1980) %>%
+  rename(F2000 = Y2000) %>%
+  rename(F1980 = Y1980)
+MigrationFlowsM <- MigrationFlowsM %>%
+  select(destcode, origincode, Y2000, Y1980) %>%
+  rename(M2000 = Y2000) %>%
+  rename(M1980 = Y1980)
+```
+
+```{r}
+FinalMigrationFlows <- merge(MigrationFlowsF, MigrationFlowsM, by = c("destcode", "origincode"))
+```
+
+```{r}
+FinalMigrationFlows$Y2000 <- FinalMigrationFlows$F2000 + FinalMigrationFlows$M2000
+FinalMigrationFlows$Y1980 <- FinalMigrationFlows$F1980 + 
+FinalMigrationFlows$M1980
+```
+
+```{r}
+FinalMigrationFlows <- FinalMigrationFlows %>%
+  select(destcode, origincode, Y2000, Y1980)
+FinalMigrationFlows1980 <- FinalMigrationFlows %>%
+  select(origincode, destcode, Y1980)
+FinalMigrationFlows2000 <- FinalMigrationFlows %>%
+  select(origincode, destcode, Y2000)
+```
+
+```{r}
+FinalMigrationFlows1980 <- FinalMigrationFlows1980 %>%
+  filter(destcode %in% countries & origincode %in% countries)
+FinalMigrationFlows2000 <- FinalMigrationFlows2000 %>%
+  filter(destcode %in% countries & origincode %in% countries)
+```
+
+```{r}
+migration1980 <- graph_from_data_frame(FinalMigrationFlows1980, directed = TRUE)
+
+migration_network1980 <- ggnetwork(migration1980)
+
+ggplot(data = migration_network1980, aes(x = x, y = y, xend = xend, yend = yend)) + geom_edges(arrow = arrow(type = "closed", length = unit(6, "pt")), color = "lightgray", aes(size = Y1980)) + geom_nodes() + geom_nodelabel(aes(label = name)) + theme_blank()
+```
+
+```{r}
+migration2000 <- graph_from_data_frame(FinalMigrationFlows2000, directed = TRUE)
+
+migration_network2000 <- ggnetwork(migration2000)
+
+ggplot(data = migration_network2000, aes(x = x, y = y, xend = xend, yend = yend)) + geom_edges(arrow = arrow(type = "closed", length = unit(6, "pt")), color = "lightgray", aes(size = Y2000)) + geom_nodes() + geom_nodelabel(aes(label = name)) + theme_blank()
+```
+
+1b. Compute the *unweighted* in-degree for Japan in this network from 2000, and the *weighted* in-degree for Japan in this network from 2000.  In 1-2 sentences, interpret these numbers in context (i.e., without using the terms "in-degree" or "weighted").
+
+> ANSWER:  Japan's score reflects how often the country is traveled to or out of. We can see it is a very popular destination, shortly behind Great Britain and the U.S.
+
+```{r}
+strength(migration2000, weights = E(migration2000)$Y2000)
+```
+
+
+1c. Among these same countries, identify the top 5 countries *of origin* and *of destination* (separately) in 1980 using (weighted) degree centrality.  Interpret this information.
+
+> ANSWER: The top five countries of origin are the U.S., Japan, Great Britain, Brazil and Argentina. The top five countries of destination are South Korea, Great Britain, India, Japan and the U.S. There is extreme variability in the countries of origin, but not in the countries of destination, where the numbers are all pretty even.
+
+```{r}
+strength(migration1980, weights = E(migration1980)$Y1980, mode = "in")
+strength(migration1980, weights = E(migration1980)$Y1980, mode = "out")
+```
+
+
+1d. Among these same countries, idenitify the top 5 countries *of origin* and *of destination* (separately) in 2000 using (weighted) degree centrality.  Interpret this information.
+
+> ANSWER: The top five countries of origin are the U.S., Japan, Great Britain, Brazil and Argentina. The top five countries of destination are Great Britain, South Korea, Japan, India and the U.S. It is interesting that both have generally the same rankings in their respective categories as they did in 1980.
+
+```{r}
+strength(migration2000, weights = E(migration2000)$Y2000, mode = "in")
+strength(migration2000, weights = E(migration2000)$Y2000, mode = "out")
+```
+
+
+1e. What is the diameter of this network in 2000? In 1-2 sentences, interpret this value.
+
+> ANSWER:  The diameter is 1, which means the longest shortest path between the nodes is 1.
+
+```{r}
+diameter(migration2000, directed = FALSE)
+```
+
+
+1f. What is the density of this network in 2000? In 1-2 sentences, interpret this value.
+
+> ANSWER: The density is approximately 2.29, which is the proportion of possible edges realized.
+
+```{r}
+vcount(migration2000)
+
+edge_count <- ecount(migration2000)
+possible_edges <- 8 * (8 - 1) / 2
+density = edge_count / possible_edges
+density
+```
+
+
+\newpage
+# 2. Mapping spatial data 
+
+Reproduce the map you created for Lab08-spatial (and finish it if you didn't in class). In 2-4 sentences, interpret the visualization.  What stands out as the central message?  
+
+NOTE: you do NOT need to say what colors are representing what feature (e.g, NOT:  "In this map, I've colored the countries by GDP, with green representing low values and red representing high values") -- this is obvious to the viewer, assuming there's an appropriate legend and title.  Rather, what *information* do you extract from the visualization? (e.g., "From the choropleth below, we can see that the percent change in GDP per capita  between 1957-2007 varies greatly across countries in Central America.  In particular, Panama and Costa Rica stand out as having GDPs per capita that increased by over 200% across those 50 years.  In contrast, Nicaragua's GDP per capita decreased by a small percentage during that same time span.")
+
+> ANSWER:  
+
+```{r}
+hate_crimes <- fivethirtyeight::hate_crimes
+
+hate_crimes_map1 <- hate_crimes %>%
+  right_join(usa_states, by = c("state" = "region"))
+
+ggplot(hate_crimes_map, aes(x = long, y = lat, group = group
+                      , fill = share_vote_trump)) +
+  geom_polygon(color = "white") +
+  theme_void() +
+  coord_fixed(ratio = 1.3) +
+  labs(fill = "Country-wide hate crimes based on the share of the population that voted for Trump") +
+  theme(legend.position="bottom")
+```
+
+\newpage
+# 3. Mapping spatial data at a different level
+
+Create a map at the world, country, or county level based on the choices provided in lab08-spatial, that is at a DIFFERENT level than the map you created for the lab (and included above).  For instance, if you created a map of US counties for the lab, then choose a country or world map to create here.
+
+Note: While I recommend using one of the datasets provided in the lab so you don't spend a lot of time searching for data, you are not strictly required to use one of those datasets.  
+
+Describe one challenge you encountered (if any) while creating this map.
+
+> ANSWER: 
+
+```{r}
+
+
+```
+
+
+\newpage
+# 4. Love Actually (OPTIONAL PRACTICE)
+
+This problem is *optional* and will not be graded, but is given to provide additional practice interpreting networks and as another real-world example of network analysis that might be intriguing to film buffs. 
+
+Consider the figure "The Two Londons of 'Love Actually'" in [this FiveThirtyEight article](https://fivethirtyeight.com/features/the-definitive-analysis-of-love-actually-the-greatest-christmas-movie-of-our-time/). 
+
+2a. Based on this figure, is the network connected?  In 1-2 sentences, please explain.
+
+> ANSWER: 
+
+2b. Based on the figure, what is the (unweighted) degree for Emma Thompson?  What is the (unweighted) degree for Keira Knightley?  Explain what these values mean for these characters.
+
+> ANSWER: 
+
+2c. Based on the figure, for whom would the (unweighted) betweenness centrality measure be higher: Colin Firth or Hugh Grant?  Explain what this implies. 
+
+> ANSWER:  
+
+
+\newpage
+# 5. Migration network on a world map! (OPTIONAL PRACTICE) 
+
+This problem is *optional* and will not be graded, but is given to provide additional coding practice and as a challenge to incorporate networks and mapping techniques together.   
+
+Create a world map that visualizes the network of countries we examined in #1 for the year 2000.  For example, arrows to and from each of countries on the world map could have edge widths relative to their weighted degree centrality to represent migration to and from the countries.
+
+Code to get you started is provided below.
+
+```{r}
+# from mdsr package
+# should see 'world_cities` df in your environment after running
+data(world_cities)
+
+# two-letter country codes
+# Argentina, Brazil, Great Britain, Japan, Kenya
+# India, South Korea, United States
+countries2 <- data.frame(country3=countries
+                        , country2 = c("AR", "BR", "GB", "JP"
+                                         , "KE", "IN","KR", "US"))
+
+# find capitals for anchoring points; can't find D.C., use Boston
+cities <- c("Buenos Aires", "Brasilia", "London", "Tokyo", "Nairobi"
+             , "New Delhi", "Seoul", "Boston")
+
+anchors <- world_cities %>%
+  right_join(countries2, by = c("country" = "country2")) %>%
+  filter(name %in% cities) %>%
+  select(name, country, country3, latitude, longitude) 
+
+# one suggested path:
+# 1. based on the anchors dataset above and your Migration 2000 dataset created for # 1, 
+#    create dataframe that would supply geom_curve with the relevant arrow locations
+#    (start points and end points)
+# 2. create world map dataset using `map_data` function
+# 3. use geom_polygon to create world map, geom_point and/or geom_text to add 
+#    city points, and geom_curve to add weighted/colored arrows
+
+
+```
+

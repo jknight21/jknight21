@@ -1,0 +1,12 @@
+name: Lab04b-shiny-skateboards
+title: Lab04b-shiny-skateboards
+username:
+account: jknight21
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3782829
+bundleId: 4337215
+url: https://jknight21.shinyapps.io/Lab04b-shiny-skateboards/
+when: 1615578473.68105
+asMultiple: FALSE
+asStatic: FALSE
