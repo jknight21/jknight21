@@ -1,0 +1,109 @@
+---
+title: "Calendar Data"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ical)
+library(ggplot2)
+```
+
+```{r}
+path <- "C:/Users/_Admin/Desktop"
+filename <- "Jett Knight_jettknight@gmail.com.ics"
+```
+
+```{r}
+my_calendar0 <- ical_parse_df(file = paste0(path, "/", filename)) %>%
+  mutate(start_datetime = with_tz(start, tzone = "America/New_York"), end_datetime = with_tz(end, tzone = "America/New_York"), length_hour = end_datetime - start_datetime, date = floor_date(start_datetime, unit = "day"))
+```
+
+```{r}
+my_calendar <- my_calendar0 %>%
+  filter(date > "2021-02-28") %>%
+  filter(date < "2021-03-15") %>%
+  select(-c(uid, description, last.modified, status)) %>%
+  rename(length_second = length_hour) %>%
+  mutate(length_hour = as.numeric(length_second / 3600))
+```
+
+```{r}
+my_calendar %>%
+  group_by(summary) %>%
+  summarize(tot_hrs = sum(length_hour))
+```
+
+```{r}
+gsub("Working out", "Work out", my_calendar)
+```
+
+
+```{r}
+my_calendar %>%
+  mutate(summary2 = tolower(summary)) %>%
+  group_by(summary2) %>%
+  summarize(tot_hrs = as.numeric(sum(length_hour)))
+```
+
+```{r}
+barplotdata <- my_calendar %>%
+  filter(summary %in% c("Computer Science", "Data Science", "Film Class"))
+```
+
+```{r}
+basicbarplot <- ggplot(data = barplotdata, aes(x = summary, y = length_hour)) + geom_bar(stat = "identity", color = "blue", fill = "blue") + labs(title = "Time Spent in Classes Over Two Weeks", x = "Classes", y = "Hours Spent in Class")
+basicbarplot
+```
+
+```{r}
+boxplotdata <- my_calendar
+```
+
+```{r}
+boxplotdata$summary <- gsub("Computer Science", "Class 1", boxplotdata$summary)
+```
+
+```{r}
+boxplotdata$summary <- gsub("Data Science", "Class 2", boxplotdata$summary)
+```
+
+```{r}
+boxplotdata$summary <- gsub("Film Class", "Class 3", boxplotdata$summary)
+```
+
+```{r}
+basicboxplot <- ggplot(data = boxplotdata, aes(x = summary, y = length_hour)) + geom_boxplot(stat = "boxplot", color = c("red", "red", "red", "blue", "blue", "blue", "blue"), fill = c("red", "red", "red", "blue", "blue", "blue", "blue")) + labs(title = "Time Spent on All Weekly Activities", x = "Activities", y = "Hours Spent on Activity")
+basicboxplot
+```
+
+```{r}
+sum(my_calendar$length_hour)
+```
+
+```{r}
+my_calendar2 <- my_calendar %>%
+  group_by(summary) %>%
+  summarize(tot_hrs = sum(length_hour))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
