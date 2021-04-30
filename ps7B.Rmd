@@ -183,21 +183,21 @@ Reproduce the map you created for Lab08-spatial (and finish it if you didn't in 
 
 NOTE: you do NOT need to say what colors are representing what feature (e.g, NOT:  "In this map, I've colored the countries by GDP, with green representing low values and red representing high values") -- this is obvious to the viewer, assuming there's an appropriate legend and title.  Rather, what *information* do you extract from the visualization? (e.g., "From the choropleth below, we can see that the percent change in GDP per capita  between 1957-2007 varies greatly across countries in Central America.  In particular, Panama and Costa Rica stand out as having GDPs per capita that increased by over 200% across those 50 years.  In contrast, Nicaragua's GDP per capita decreased by a small percentage during that same time span.")
 
-> ANSWER:  
+> ANSWER: This visualization shows the proportion of country-wide hate crimes based on the share of the population that voted for Donald Trump. We can see that generally states in the Midwest and in the South had large proportions of hate crimes compared to states on the West or East coasts. This tracks, as a lot of the states that swung for Trump this election cycle were in these areas with high proportions of Trump voters.
 
 ```{r}
-hate_crimes <- fivethirtyeight::hate_crimes
+hate_crimes <- fivethirtyeight::hate_crimes %>%
+  mutate(region = tolower(state))
 
-hate_crimes_map1 <- hate_crimes %>%
-  right_join(usa_states, by = c("state" = "region"))
+usa_map_hate_crimes <- hate_crimes %>%
+  right_join(usa_states, by = "region")
 
-ggplot(hate_crimes_map, aes(x = long, y = lat, group = group
+ggplot(usa_map_hate_crimes, aes(x = long, y = lat, group = group
                       , fill = share_vote_trump)) +
   geom_polygon(color = "white") +
   theme_void() +
   coord_fixed(ratio = 1.3) +
-  labs(fill = "Country-wide hate crimes based on the share of the population that voted for Trump") +
-  theme(legend.position="bottom")
+  labs(fill = "Country-wide hate crimes based on the share of the population that voted for Trump") + theme(legend.position = "bottom")
 ```
 
 \newpage
@@ -209,10 +209,12 @@ Note: While I recommend using one of the datasets provided in the lab so you don
 
 Describe one challenge you encountered (if any) while creating this map.
 
-> ANSWER: 
+> ANSWER: This is a map of all counties in Massachusetts, divided by subregion. One challenge I had was getting RStudio to fill in by subregion.
 
 ```{r}
+ma_counties <- map_data(map = "county", region = "massachusetts")
 
+ggplot(ma_counties, aes(x = long, y = lat, group = group, fill = subregion)) + geom_polygon(color = "white") + theme_void() + coord_fixed(ratio = 1.3) + coord_map(projection = "albers", parameters = c(lat0 = 41, lat1 = 42), wrap = TRUE)
 
 ```
 
