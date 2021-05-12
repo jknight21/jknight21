@@ -184,7 +184,7 @@ dbGetQuery(aircon, "SELECT *
                    LIMIT 0,5")
 ```
 
-```{sql connection=aircon}
+```{r}
 
 ```
 
@@ -192,7 +192,7 @@ dbGetQuery(aircon, "SELECT *
 
 > ANSWER: 
 
-```{sql connection=aircon}
+```{r}
 
 ```
 
@@ -200,7 +200,7 @@ dbGetQuery(aircon, "SELECT *
 
 > ANSWER: 
 
-```{sql connection=aircon}
+```{r}
 
 ```
 
